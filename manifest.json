@@ -1,0 +1,19 @@
+
+{
+  "name": "Pixel Rainbow Birthday",
+  "short_name": "PixelBD",
+  "description": "A festive 8-bit pixel art birthday greeting app.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff0055",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1395/1395461.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
