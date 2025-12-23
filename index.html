@@ -6,13 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Twj 生日快乐! - Pixel Birthday</title>
     
-    <!-- PWA & Mobile Optimization -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#ff0055">
     
-    <!-- Open Graph for Social Sharing -->
     <meta property="og:title" content="Happy Birthday Twj!">
     <meta property="og:description" content="一个为你准备的像素风圣诞生日惊喜。">
     <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/1395/1395461.png">
@@ -41,7 +39,6 @@
             justify-content: center;
         }
 
-        /* 桌面端装饰外框 */
         .monitor-cabinet {
             width: 95vw; height: 75vh;
             max-width: 850px; max-height: 550px;
@@ -53,7 +50,6 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 手机端适配：全屏显示，隐藏外框 */
         @media screen and (max-width: 768px) {
             .monitor-cabinet {
                 width: 100vw; height: 100vh;
@@ -61,8 +57,6 @@
                 padding: 0; border: none; border-radius: 0;
                 background: none; box-shadow: none;
             }
-            .app-container { border: none !important; border-radius: 0 !important; }
-            .dog-bubble { font-size: 20px !important; min-width: 200px !important; }
         }
 
         .app-container {
@@ -119,8 +113,8 @@
 
         .dog-track { position: absolute; bottom: 25%; width: 100%; height: 120px; pointer-events: none; z-index: 50; }
         .dog-container { position: absolute; height: 100%; display: flex; flex-direction: column; align-items: center; animation: dog-run-full 6s linear infinite; }
-        .dog-bubble { background: white; color: black; font-size: 30px; font-weight: bold; padding: 15px 25px; border: 6px solid black; position: relative; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; box-sizing: border-box; image-rendering: pixelated; white-space: nowrap; }
-        .dog-bubble::after { content: ''; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 12px solid black; }
+        .dog-bubble { background: white; color: black; font-size: 20px; font-weight: bold; padding: 10px 15px; border: 4px solid black; position: relative; margin-bottom: 10px; text-align: center; display: flex; align-items: center; justify-content: center; box-sizing: border-box; image-rendering: pixelated; white-space: nowrap; }
+        .dog-bubble::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid black; }
         .pixel-dog { height: 100%; width: auto; image-rendering: pixelated; }
 
         @keyframes dog-run-full {
@@ -151,7 +145,9 @@
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "react/": "https://esm.sh/react@^19.2.3/"
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "vite": "https://esm.sh/vite@^7.3.0"
   }
 }
 </script>
@@ -161,18 +157,13 @@
         <div id="root" style="width: 100%; height: 100%;"></div>
     </div>
     
-    <!-- 引入主程序逻辑 -->
-    <script type="module" src="index.tsx"></script>
+    <!-- Vite 将会自动处理这个路径并在编译时转换代码 -->
+    <script type="module" src="/index.tsx"></script>
 
     <script>
-        // PWA Service Worker 注册
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(reg => {
-                    console.log('PWA Ready:', reg.scope);
-                }).catch(err => {
-                    console.log('SW failed:', err);
-                });
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW failed:', err));
             });
         }
     </script>

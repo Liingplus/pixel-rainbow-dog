@@ -9,7 +9,10 @@ class ChiptuneSynth {
   isPlaying: boolean = false;
 
   constructor() {
-    this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
+    if (AudioContextClass) {
+      this.ctx = new AudioContextClass();
+    }
   }
 
   playNote(freq: number, start: number, duration: number, type: OscillatorType = 'square') {
@@ -35,7 +38,6 @@ class ChiptuneSynth {
     this.isPlaying = true;
     if (this.ctx.state === 'suspended') this.ctx.resume();
 
-    // 旋律定义：[频率, 持续时间]
     const happyBirthday = [
       [261.63, 0.4], [261.63, 0.2], [293.66, 0.6], [261.63, 0.6], [349.23, 0.6], [329.63, 1.2],
       [261.63, 0.4], [261.63, 0.2], [293.66, 0.6], [261.63, 0.6], [392.00, 0.6], [349.23, 1.2],
@@ -51,10 +53,9 @@ class ChiptuneSynth {
     
     let nextNoteTime = this.ctx.currentTime;
     const schedule = () => {
-      if (!this.isPlaying) return;
+      if (!this.isPlaying || !this.ctx) return;
       
-      // 预先调度一段时间的音符
-      while (nextNoteTime < this.ctx!.currentTime + 0.1) {
+      while (nextNoteTime < this.ctx.currentTime + 0.1) {
         fullMelody.forEach(([freq, dur]) => {
           this.playNote(freq, nextNoteTime, dur * 0.8);
           nextNoteTime += dur;
@@ -87,10 +88,8 @@ const App = () => {
   const [dogImage, setDogImage] = useState<string | null>(null);
   const [error, setError] = useState<boolean>(false);
   const synthRef = useRef<ChiptuneSynth | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 初始化：加载持久化数据
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
@@ -186,7 +185,6 @@ const App = () => {
   };
 
   const startSurprise = async () => {
-    // 激活音频
     if (!synthRef.current) {
       synthRef.current = new ChiptuneSynth();
       synthRef.current.startBGM();
@@ -199,11 +197,16 @@ const App = () => {
 
     setStage('loading');
     const presetImg = new Image();
-    presetImg.src = `./image.png?t=${Date.now()}`;
+    presetImg.src = `/image.png?t=${Date.now()}`;
     presetImg.onload = async () => {
       const result = await processImage(presetImg.src);
-      setDogImage(result);
-      setStage('active');
+      if (result) {
+        setDogImage(result);
+        setStage('active');
+      } else {
+        setError(true);
+        setStage('active');
+      }
     };
     presetImg.onerror = () => {
       setTimeout(() => { setError(true); setStage('active'); }, 1000);
@@ -278,5 +281,8 @@ const App = () => {
   );
 };
 
-const root = createRoot(document.getElementById('root')!);
-root.render(<App />);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(<App />);
+}
