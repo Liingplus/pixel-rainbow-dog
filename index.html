@@ -135,9 +135,6 @@
         .fill { height: 100%; background: #00ff41; animation: grow-fast 1s forwards; }
         @keyframes grow-fast { from { width: 0; } to { width: 100%; } }
         .pixel-text { font-family: 'Press Start 2P'; font-size: 12px; }
-        .reset-btn { position: absolute; top: 10px; right: 10px; padding: 5px 10px; background: #444; box-shadow: 2px 2px 0px #222; z-index: 3000; font-size: 8px; }
-        .error-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 200; background: rgba(0,0,0,0.9); padding: 20px; border: 4px double #fff; width: 80%; }
-        .upload-btn { background: #00ff41; color: #000; box-shadow: 5px 5px 0px #008f11; }
     </style>
 <script type="importmap">
 {
@@ -157,7 +154,6 @@
         <div id="root" style="width: 100%; height: 100%;"></div>
     </div>
     
-    <!-- Vite 将会自动处理这个路径并在编译时转换代码 -->
     <script type="module" src="/index.tsx"></script>
 
     <script>

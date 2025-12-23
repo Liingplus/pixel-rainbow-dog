@@ -1,7 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { GoogleGenAI, Modality } from "@google/genai";
 
 // --- 8-bit 音频引擎 ---
 class ChiptuneSynth {
@@ -68,8 +67,6 @@ class ChiptuneSynth {
   }
 }
 
-const STORAGE_KEY = 'pixel_rainbow_dog_data';
-
 const PixelChristmasTree = () => (
   <div className="tree-container">
     <div className="pixel-star"></div>
@@ -86,17 +83,9 @@ const PixelChristmasTree = () => (
 const App = () => {
   const [stage, setStage] = useState<'idle' | 'loading' | 'active'>('idle');
   const [dogImage, setDogImage] = useState<string | null>(null);
-  const [error, setError] = useState<boolean>(false);
   const synthRef = useRef<ChiptuneSynth | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      setDogImage(savedData);
-    }
-  }, []);
-
+  // 图像处理逻辑：自动去除背景（泛洪算法），让 image.png 看起来更像一个游戏角色
   const processImage = (src: string): Promise<string> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -116,6 +105,7 @@ const App = () => {
         const visited = new Uint8Array(w * h);
         const queue: [number, number][] = [];
 
+        // 假设左上角像素为背景色
         const refR = data[0], refG = data[1], refB = data[2];
 
         for (let x = 0; x < w; x++) queue.push([x, 0], [x, h - 1]);
@@ -157,66 +147,31 @@ const App = () => {
           cropCanvas.width = maxX - minX + 1; cropCanvas.height = maxY - minY + 1;
           ctx.putImageData(imageData, 0, 0);
           cropCanvas.getContext('2d')!.drawImage(canvas, minX, minY, cropCanvas.width, cropCanvas.height, 0, 0, cropCanvas.width, cropCanvas.height);
-          const finalResult = cropCanvas.toDataURL('image/png');
-          localStorage.setItem(STORAGE_KEY, finalResult);
-          resolve(finalResult);
+          resolve(cropCanvas.toDataURL('image/png'));
         }
       };
-      img.onerror = () => resolve("");
+      img.onerror = () => resolve(src); // 即使失败也尝试直接显示原始图
     });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const result = await processImage(event.target?.result as string);
-        setDogImage(result);
-        setError(false);
-        setStage('active');
-        if (!synthRef.current) {
-          synthRef.current = new ChiptuneSynth();
-          synthRef.current.startBGM();
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const startSurprise = async () => {
+    // 播放音乐（需要用户交互触发）
     if (!synthRef.current) {
       synthRef.current = new ChiptuneSynth();
       synthRef.current.startBGM();
     }
 
-    if (dogImage) {
-      setStage('active');
-      return;
-    }
-
     setStage('loading');
-    const presetImg = new Image();
-    presetImg.src = `/image.png?t=${Date.now()}`;
-    presetImg.onload = async () => {
-      const result = await processImage(presetImg.src);
-      if (result) {
-        setDogImage(result);
-        setStage('active');
-      } else {
-        setError(true);
-        setStage('active');
-      }
-    };
-    presetImg.onerror = () => {
-      setTimeout(() => { setError(true); setStage('active'); }, 1000);
-    };
-  };
-
-  const clearMemory = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setDogImage(null);
-    setError(true);
+    
+    // 加载根目录下的 image.png
+    const targetSrc = '/image.png';
+    const processed = await processImage(targetSrc);
+    setDogImage(processed);
+    
+    // 给一点加载动画时间，增加仪式感
+    setTimeout(() => {
+      setStage('active');
+    }, 1200);
   };
 
   return (
@@ -225,7 +180,7 @@ const App = () => {
         <div className="hero">
           <div className="gift-box" onClick={startSurprise}>🎁</div>
           <button className="pixel-btn" onClick={startSurprise}>
-            {dogImage ? '进入圣诞空间' : '启动系统'}
+            打开惊喜
           </button>
         </div>
       )}
@@ -249,31 +204,13 @@ const App = () => {
 
           <PixelChristmasTree />
 
-          {error && !dogImage ? (
-            <div className="error-overlay">
-              <div className="pixel-text" style={{fontSize: '10px', marginBottom: '10px'}}>请提供狗狗素材</div>
-              <button className="pixel-btn upload-btn" onClick={() => fileInputRef.current?.click()}>
-                上传图片
-              </button>
-              <input type="file" ref={fileInputRef} style={{display: 'none'}} accept="image/*" onChange={handleFileUpload} />
+          {dogImage && (
+            <div className="dog-track">
+              <div className="dog-container">
+                <div className="dog-bubble">Twj生日快乐！</div>
+                <img src={dogImage} className="pixel-dog" alt="rainbow-dog" />
+              </div>
             </div>
-          ) : (
-            dogImage && (
-              <>
-                <div className="dog-track">
-                  <div className="dog-container">
-                    <div className="dog-bubble">Twj生日快乐！</div>
-                    <img src={dogImage} className="pixel-dog" alt="rainbow-dog" />
-                  </div>
-                </div>
-                <button 
-                  className="pixel-btn reset-btn" 
-                  onClick={(e) => { e.stopPropagation(); clearMemory(); }}
-                >
-                  重置
-                </button>
-              </>
-            )
           )}
         </>
       )}
